@@ -100,14 +100,33 @@ db.todo.create(body).then(function(todo){
 // DELETE /todos/:id
 app.delete('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-
-	if (!matchedTodo) {
-		res.status(404).json({"error": "no todo found with that id"});
-	} else {
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	}
+    db.todo.destroy({
+        where:{
+            id:todoId
+        }
+    }).then(function(rowsDeleted){
+        if(rowsDeleted === 0){
+            res.status(404).json({
+                error:'No todo with id= '+todoId.toString()+' found!'
+            });    
+        }else{
+            res.status(200).json({
+                Done: rowsDeleted.toString()+' todo item/s was/were deleted!'
+            });
+        }
+    }, function(e){
+        res.status(500).send();
+    });
+//    db.todo.findById(todoId).then(function(todo){
+//        if(!!todo){
+//            todo.destroy();
+//            res.status(200).send();    
+//        }else{
+//            res.status(404).send();
+//        }
+//    }, function(e){
+//        res.status(500).send();
+//    });
 });
 
 // PUT /todos/:id
